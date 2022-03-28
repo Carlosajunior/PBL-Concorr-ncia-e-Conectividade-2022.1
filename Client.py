@@ -10,7 +10,8 @@ class Cliente:
     def cliente_conectar(self,ip, porta):
         #Tenta estabelecer uma conexão com o endereço de IP e a porta informados
         print("Se conectando ao ip ", ip," na porta ",porta,".")
-        self.cliente_socket.connect(ip, porta)
+        endereco = (ip, porta)
+        self.cliente_socket.connect(endereco)
 
 def cliente_enviar(self,mensagem):
     try: 
@@ -33,3 +34,7 @@ def cliente_enviar(self,mensagem):
         print ("Fechando a conexão com o servidor")
         #Finaliza a conexão com o servidor
         self.cliente_socket.close() 
+
+if __name__ == "__main__":
+    cliente = Cliente()
+    cliente.cliente_conectar("192.168.43.143", 7777)
