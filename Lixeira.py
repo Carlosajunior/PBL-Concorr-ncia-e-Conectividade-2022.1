@@ -23,10 +23,10 @@ class Lixeira:
         self.cliente_socket.connect(endereco)
         self.receber_mensagem()
 
-    def enviar_mensagem(self,ip, porta, mensagem):
+    def enviar_mensagem(self, mensagem, cliente):
         try: 
             #Tenta enviar uma mensagem
-            self.cliente_socket.send(bytes(mensagem,'utf-8'))
+            cliente.send(bytes(mensagem,'utf-8'))
         except socket.error as e: 
             print ("Socket error: ",str(e)) 
         except Exception as e: 
@@ -44,10 +44,10 @@ class Lixeira:
                 mensagem = dados.decode('utf-8')
                 if mensagem.split('/')[0] == 'alterar status':
                     if mensagem.split('/')[1] == self.status_lixeira():
-                        self.cliente_socket.send(bytes('novo status é igual ao atual','utf-8'))
+                        self.enviar_mensagem('novo status é igual ao atual', cliente)
                     else:
                         self.definir_status_lixeira(mensagem)
-                        self.cliente_socket.send(bytes('status alterado','utf-8'))                   
+                        self.enviar_mensagem('status alterado', cliente)                   
                 elif mensagem.split('/')[0] == "dados das lixeiras":                                                                
                     dados_lixeira = {
                         "carga": self.carga_lixeira(),
@@ -55,22 +55,22 @@ class Lixeira:
                         "posicao": self.posicao_lixeira()
                     }
                     response = json.dumps(dados_lixeira)
-                    self.cliente_socket.send(bytes(response,'utf-8')) 
+                    self.enviar_mensagem(response, cliente) 
                 elif mensagem.split('/')[0] == "esvaziar lixeira":
                     if self.carga_lixeira() > 0:
                         self.definir_carga(0)
-                        self.cliente_socket.send(bytes('lixeira esvaziada','utf-8'))
+                        self.enviar_mensagem('lixeira esvaziada', cliente)
                     else:
-                        self.cliente_socket.send(bytes('lixeira já está vazia','utf-8'))
+                        self.enviar_mensagem('lixeira já está vazia', cliente)
                 elif mensagem.split('/')[0] == "definir capacidade":
                     self.capacidade_lixeira(mensagem)
-                    self.cliente_socket.send(bytes('capacidade maxima da lixeira alterada','utf-8'))
+                    self.enviar_mensagem('capacidade maxima da lixeira alterada', cliente)
                 elif mensagem.split('/')[0] == "adicionar lixo":
                     if float(mensagem.split('/')[1]) + self.carga_lixeira() > self.capacidade_lixeira():
-                        self.cliente_socket.send(bytes('a carga de lixo ultrapassa a capacidade máxima da lixeira','utf-8'))
+                        self.enviar_mensagem('a carga de lixo ultrapassa a capacidade máxima da lixeira', cliente)
                     else:
                         self.definir_carga(mensagem)
-                        self.cliente_socket.send(bytes('lixo adicionado a lixeira com sucesso','utf-8'))
+                        self.enviar_mensagem('lixo adicionado a lixeira com sucesso', cliente)
 
     def definir_capacidade(self, mensagem):
         self.capacidade_lixeira = mensagem.split('/')[1]
