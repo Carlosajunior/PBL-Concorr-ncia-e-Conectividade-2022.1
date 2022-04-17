@@ -21,23 +21,18 @@ class Lixeira:
         print("Se conectando ao ip ", ip," na porta ",porta,".")
         endereco = (ip, porta)
         self.cliente_socket.connect(endereco)
+        self.receber_mensagem()
 
     def enviar_mensagem(self,ip, porta, mensagem):
         try: 
             #Tenta enviar uma mensagem
-            self.lixeira_conectar(ip, porta)
             self.cliente_socket.send(bytes(mensagem,'utf-8'))
         except socket.error as e: 
             print ("Socket error: ",str(e)) 
         except Exception as e: 
             print ("Ocorreu uma exceção:  ",str(e)) 
-        finally: 
-            print ("Fechando a conexão com o servidor")
-            #Finaliza a conexão com o servidor
-            self.cliente_socket.close() 
 
     def receber_mensagem(self):
-        self.lixeira_conectar("192.168.25.5", 2004)
         while True:
             print("Aguardando mensagem.")            
             #Aceita a conexão de um cliente
@@ -76,8 +71,6 @@ class Lixeira:
                     else:
                         self.definir_carga(mensagem)
                         self.cliente_socket.send(bytes('lixo adicionado a lixeira com sucesso','utf-8'))
-                #Fecha a conexão
-                cliente.close()
 
     def definir_capacidade(self, mensagem):
         self.capacidade_lixeira = mensagem.split('/')[1]
