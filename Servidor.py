@@ -26,29 +26,32 @@ class Servidor:
     def alterar_status_lixeira(self,mensagem):
         key = mensagem.split('/')[1]+','+mensagem.split('/')[2]
         endereco = self.lixeiras.get(key)
-        msg = 'alterar status'+'/'+mensagem.split('/')[3]
+        msg = 'alterar status/'+mensagem.split('/')[3]
         response = self.servidor_socket.sendto(bytes(msg,'utf-8'), endereco)
         self.enviar_mensagem(response)
 
     def dados_das_lixeiras(self):
         dados = []
-        for value in self.lixeiras.values():
-            response = self.servidor_socket.sendto(bytes('dados das lixeiras'+'/','utf-8'), value)
-            dados.append(json.loads(response))
-        dados_lixeiras = {"dados":dados}
-        mensagem = json.dumps(dados_lixeiras)
-        self.enviar_mensagem(mensagem)
+        if self.lixeiras.keys():
+            for value in self.lixeiras.values():
+                response = self.servidor_socket.sendto(bytes('dados das lixeiras/','utf-8'), value)
+                dados.append(json.loads(response))
+            dados_lixeiras = {"dados":dados}
+            mensagem = json.dumps(dados_lixeiras)
+            self.enviar_mensagem(mensagem)
+        else:
+            self.enviar_mensagem('não há lixeira cadastradas.')
 
     def esvaziar_lixeira(self, mensagem):
         key = mensagem.split('/')[1]+','+mensagem.split('/')[2]
         endereco = self.lixeiras.get(key)
-        msg = "esvaziar lixeira"+'/'
-        response = self.servidor_socket.sendto(bytes(msg,'utf-8'), endereco)
-        self.enviar_mensagem(response)
+        msg = "esvaziar lixeira/"
+        request = self.servidor_socket.sendto(bytes(msg,'utf-8'), endereco)
+        self.enviar_mensagem(request)
 
     def alterar_ordem_lixeiras(self, mensagem):
         endereco = self.caminhao.get('caminhao')
-        msg = 'alterar trajeto'+'/'+mensagem.split('/')[1]+'/'+mensagem.split('/')[2]
+        msg = 'alterar trajeto/'+mensagem.split('/')[1]+'/'+mensagem.split('/')[2]
         response = self.servidor_socket.sendto(bytes(msg,'utf-8'), endereco)
         self.enviar_mensagem(response)
 

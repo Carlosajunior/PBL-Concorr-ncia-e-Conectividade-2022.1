@@ -73,8 +73,6 @@ class Caminhao:
         else:
             print("A lixeira na posicao ",dados_lixeira.get('posicao')," está bloqueada.")
 
-
-
 if __name__ == "__main__":
     caminhao = Caminhao()
     caminhao.caminhao_conectar("192.168.43.143", 7777)

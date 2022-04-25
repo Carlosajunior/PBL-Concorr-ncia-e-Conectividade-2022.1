@@ -26,7 +26,7 @@ class Administrador:
             return response.decode('utf-8') 
 
     def alterar_status_lixeira(self,latitude, longitude, status):
-        mensagem = 'alterar status'+'/'+latitude+'/'+longitude+'/'+status
+        mensagem = 'alterar status/'+latitude+'/'+longitude+'/'+status
         response = self.administrador_enviar(self, mensagem)
         if response == 'status alterado':
             print('status alterado com sucesso.')
@@ -34,7 +34,7 @@ class Administrador:
             print('ocorreu um erro ao tentar alterar o status.')
 
     def alterar_percurso(self, latitude, longitude, posicao):
-        mensagem = 'alterar trajeto'+'/'+latitude+'/'+longitude+'/'+posicao
+        mensagem = 'alterar trajeto/'+latitude+'/'+longitude+'/'+posicao
         response = self.administrador_enviar(self, mensagem)
         if response == 'posição da lixeira alterada':
             print('posição da lixeira alterada com sucesso.')
