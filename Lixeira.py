@@ -21,12 +21,13 @@ class Lixeira:
         print("Se conectando ao ip ", ip," na porta ",porta,".")
         endereco = (ip, porta)
         self.cliente_socket.connect(endereco)
+        self.cadastrar_lixeira()
         self.receber_mensagem()
 
-    def enviar_mensagem(self, mensagem, cliente):
+    def enviar_mensagem(self, mensagem):
         try: 
             #Tenta enviar uma mensagem
-            cliente.send(bytes(mensagem,'utf-8'))
+            self.cliente_socket.send(bytes(mensagem,'utf-8'))
         except socket.error as e: 
             print ("Socket error: ",str(e)) 
         except Exception as e: 
@@ -92,6 +93,10 @@ class Lixeira:
 
     def posicao_lixeira(self):
         return self.latitude_lixeira, self.longitude_lixeira
+
+    def cadastrar_lixeira(self):
+        mensagem = "cadastrar lixeira"+'/'+self.latitude_lixeira+'/'+self.longitude_lixeira
+        self.enviar_mensagem(mensagem)
 
 if __name__ == "__main__":
     lixeira = Lixeira()
