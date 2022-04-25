@@ -40,6 +40,7 @@ class Administrador:
             print('posição da lixeira alterada com sucesso.')
         else:
             print(response)
+    
 if __name__ == "__main__":
     administrador = Administrador()
     administrador.administrador_enviar("Teste")
