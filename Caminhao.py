@@ -4,7 +4,7 @@ import socket
 class Caminhao:
 
     def __init__(self):
-        self.lista_lixeiras = list
+        self.lista_lixeiras = []
         self.cliente_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     
@@ -14,22 +14,34 @@ class Caminhao:
         endereco = (ip, porta)
         self.cliente_socket.connect(endereco)
 
-    def caminhao_enviar(self,ip, porta, mensagem):
+    def enviar_mensagem(self, mensagem):
         try: 
             #Tenta enviar uma mensagem
-            self.caminhao_conectar(ip, porta)
             self.cliente_socket.send(bytes(mensagem,'utf-8'))
-            dados = self.cliente_socket.recv(16)
-            response_json = json.loads(dados.decode('utf-8'))
         except socket.error as e: 
             print ("Socket error: ",str(e)) 
         except Exception as e: 
             print ("Ocorreu uma exceção:  ",str(e)) 
-        finally: 
-            print ("Fechando a conexão com o servidor")
-            #Finaliza a conexão com o servidor
-            self.cliente_socket.close()
-            return response_json 
+
+    def receber_mensagem(self):
+        dados = self.cliente_socket.recv(self.payload)
+        if dados:
+                mensagem = dados.decode('utf-8')   
+                if mensagem.split('/')[0] == "alterar trajeto":
+                    self.alterar_trajeto_caminhao(mensagem) 
+
+    def alterar_trajeto_caminhao(self, mensagem):
+        old_index = mensagem.split('/')[1]
+        new_index = mensagem.split('/')[2]
+        if old_index > len(self.lista_lixeiras) or old_index < len(self.lista_lixeiras):
+            self.enviar_mensagem('index da posição atual da lixeira na lista inválido.')
+        elif new_index > len(self.lista_lixeiras) or new_index < len(self.lista_lixeiras):
+            self.enviar_mensagem('index da posição nova da lixeira na lista inválido.')
+        elif new_index == len(self.lista_lixeiras):
+            self.enviar_mensagem('index é referente a posição atual da lixeira.')
+        else:
+            self.lista_lixeiras.insert(new_index,self.lista_lixeiras.pop(old_index))
+            self.enviar_mensagem('posição da lixeira alterada com sucesso.')
 
     def definir_percurso_lixeiras(self,ip,porta):
         response = self.caminhao_enviar(ip, porta,"percurso das lixeiras/")
