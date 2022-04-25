@@ -92,7 +92,8 @@ class Lixeira:
         return self.status_lixeira
 
     def posicao_lixeira(self):
-        return self.latitude_lixeira, self.longitude_lixeira
+        posicao =  self.latitude_lixeira+','+self.longitude_lixeira
+        return posicao
 
     def cadastrar_lixeira(self):
         mensagem = "cadastrar lixeira"+'/'+self.latitude_lixeira+'/'+self.longitude_lixeira
