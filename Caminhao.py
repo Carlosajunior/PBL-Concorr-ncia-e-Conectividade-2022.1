@@ -1,5 +1,6 @@
 import json
 import socket
+import threading
 
 class Caminhao:
 
@@ -7,13 +8,34 @@ class Caminhao:
         self.lista_lixeiras = []
         self.cliente_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+    #É a função principal do caminhão, que faz a sua conexão com o servidor, seu cadastro e fica aguardando por novas mensagens do servidor
+    def main(self):
+        while True: 
+            try:
+                ip = input("Insira o endereço de ip que deseja se conectar: ")
+                porta = input("Insira a porta que deseja se conectar no ip informado: ")
+                self.caminhao_conectar(ip, int(porta))
+            except:
+                print("Ocorreu um erro ao tentar se conectar ao endereço informado. Insira os dados novamente.")
+                continue
+            else:
+                break
+        self.cadastrar_caminhao()
+        thread = threading.Thread(target= self.receber_mensagem)
+        thread.start()
+
+    #Cadastra os dados do caminhão no servidor
+    def cadastrar_caminhao(self):
+        self.enviar_mensagem("cadastrar caminhao/")
     
+    #Realiza a conexão do caminhão ao servidor utilizando o protocolo TCP/IP
     def caminhao_conectar(self,ip, porta):
         #Tenta estabelecer uma conexão com o endereço de IP e a porta informados
         print("Se conectando ao ip ", ip," na porta ",porta,".")
         endereco = (ip, porta)
         self.cliente_socket.connect(endereco)
 
+    #Este método recebe uma mensagem no formato de string e a codifica no formato utf-8 em bytes para enviar para o servidor
     def enviar_mensagem(self, mensagem):
         try: 
             #Tenta enviar uma mensagem
@@ -23,15 +45,19 @@ class Caminhao:
         except Exception as e: 
             print ("Ocorreu uma exceção:  ",str(e)) 
 
+    #Este método é responsável por receber as mensagens enviadas pelo servidor, e a partir de seu conteudo, executar algum dos métodos
     def receber_mensagem(self):
-        dados = self.cliente_socket.recv(self.payload)
-        if dados:
-                mensagem = dados.decode('utf-8')   
-                if mensagem.split('/')[0] == "alterar trajeto":
-                    self.alterar_trajeto_caminhao(mensagem)
-                elif mensagem.split('/')[0] == "trajeto das lixeiras":
-                    self.percurso_das_lixeiras()
+        while True:
+            dados = self.cliente_socket.recv(self.payload)
+            if dados:
+                    mensagem = dados.decode('utf-8')   
+                    if mensagem.split('/')[0] == "alterar trajeto":
+                        self.alterar_trajeto_caminhao(mensagem)
+                    elif mensagem.split('/')[0] == "trajeto das lixeiras":
+                        self.percurso_das_lixeiras()
 
+    #Esse método é responsavel por receber uma string que contem a posição atual de uma lixeira na lista de percurso do caminhão e a posição
+    #nova que essa lixeira deve ser colocada
     def alterar_trajeto_caminhao(self, mensagem):
         old_index = mensagem.split('/')[1]
         new_index = mensagem.split('/')[2]
@@ -45,6 +71,7 @@ class Caminhao:
             self.lista_lixeiras.insert(new_index,self.lista_lixeiras.pop(old_index))
             self.enviar_mensagem('posição da lixeira alterada com sucesso.')
 
+    #Envia uma requisição ao servidor para retornar os dados de todas lixeiras cadastradas no mesmo a fim de criar o percurso
     def definir_percurso_lixeiras(self):
         response = self.caminhao_enviar("dados das lixeiras/")
         mensagem = response.decode('utf-8')
@@ -55,11 +82,14 @@ class Caminhao:
             self.lista_lixeiras = lixeiras_json.get('dados')
             print('percurso das lixeiras obtido.')
 
+    #Envia em um JSON a lista com o percurso das lixeiras a serem coletadas
     def percurso_das_lixeiras(self):
         percuso_lixeiras = {"dados":self.lista_lixeiras}
         trajeto_lixeiras = json.dumps(percuso_lixeiras)
         self.enviar_mensagem(trajeto_lixeiras)
 
+    #Método que tenta esvaziar a primeira lixeira da lista, fazendo a validação se ela está desbloqueada e então enviando para o servidor a requisição
+    #para alterar os dados da lixeira
     def esvaziar_lixeira(self):
         dados_lixeira = self.lista_lixeiras.pop(0)
         if dados_lixeira.get('status') == 'aberta':
@@ -75,5 +105,5 @@ class Caminhao:
 
 if __name__ == "__main__":
     caminhao = Caminhao()
-    caminhao.caminhao_conectar("192.168.43.143", 7777)
+    caminhao.main()
     
