@@ -64,9 +64,14 @@ class Server:
                     self.remover_dados_lixeira(mensagem)
                 elif mensagem.split('/')[0] == "adicionar lixo":
                     self.adicionar_lixo_lixeira(mensagem)
+                elif mensagem.split('/')[0] == "notificar lixeira esvaziada":
+                    self.notificar_administrador_lixeira_esvaziada(mensagem)
                 elif mensagem.split('/')[0] == "encerrar conexao":
                     break
         cliente.close()
+
+    def notificar_administrador_lixeira_esvaziada(self, mensagem):
+        self.enviar_mensagem("notificar lixeira esvaziada/"+mensagem.split('/')[1]+'/'+mensagem.split('/')[2], self.administrador.get("administrador"))
 
     def enviar_mensagem(self, mensagem, cliente):
         try:
@@ -107,7 +112,7 @@ class Server:
             self.enviar_mensagem(mensagem, self.administrador.get("administrador"))
 
     def atualizar_informacoes_lixeiras_caminhao(self):
-        if len(self.administrador.keys()) > 0:
+        if len(self.caminhao.keys()) > 0:
             dados_lixeiras = {"dados":self.dados}
             mensagem = "dados das lixeiras/"+json.dumps(dados_lixeiras) 
             self.enviar_mensagem(mensagem, self.caminhao.get("caminhao"))
@@ -129,10 +134,8 @@ class Server:
 
     def esvaziar_lixeira(self, mensagem):
         key = mensagem.split('/')[1]+','+mensagem.split('/')[2]
-        endereco = self.lixeiras.get(key)
-        msg = "esvaziar lixeira/"
-        request = self.servidor_socket.sendto(bytes(msg,'utf-8'), endereco)
-        self.enviar_mensagem(request)
+        cliente = self.lixeiras.get(key)
+        self.enviar_mensagem("esvaziar lixeira/", cliente)
 
     def alterar_ordem_lixeiras(self, mensagem):
         endereco = self.caminhao.get('caminhao')
@@ -148,7 +151,6 @@ class Server:
     def cadastrar_caminhao(self, cliente):
         self.caminhao.update({"caminhao": cliente})
         print("Caminhão cadastrado;")
-        print(self.caminhao)
         self.dados_das_lixeiras(cliente)
 
 if __name__ == "__main__":

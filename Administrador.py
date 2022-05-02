@@ -62,9 +62,11 @@ class Administrador:
                             string_json = mensagem.split('/')[1]
                             lista_lixeiras = json.loads(string_json).get("dados")
                             print("\n")
-                            print(lista_lixeiras)
+                            print(lista_lixeiras)                    
                         else:
-                            print("\nNão há lixeiras cadastradas no servidor.")            
+                            print("\nNão há lixeiras cadastradas no servidor.")
+                    elif mensagem.split('/')[0] == "notificar lixeira esvaziada":
+                        print("A lixeira de coordenadas ", mensagem.split('/')[1],",",mensagem.split('/')[2]," foi esvaziada pelo caminhão.")
             except Exception as e: 
                 print ("Ocorreu uma exceção:  ",str(e)) 
 

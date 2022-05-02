@@ -78,22 +78,33 @@ class Lixeira:
             if dados:
                 mensagem = dados.decode('utf-8')
                 if mensagem.split('/')[0] == 'alterar status':
-                    if mensagem.split('/')[1] != self.status_lixeira and mensagem.split('/')[1] == "aberta" or mensagem.split('/')[1] == "fechada":                      
-                        self.remover_dados_lixeira_servidor()
-                        self.definir_status_lixeira(mensagem)
-                        self.enviar_informacoes_lixeira()                                  
+                    self.alterar_status(mensagem)          
                 elif mensagem.split('/')[0] == "esvaziar lixeira":
-                    if self.carga_lixeira() > 0:
-                        self.definir_carga(0)
-                        self.enviar_mensagem('lixeira esvaziada')
-                    else:
-                        self.enviar_mensagem('lixeira já está vazia')
+                    self.esvaziar_lixeira()
                 elif mensagem.split('/')[0] == "definir capacidade":
                     self.capacidade_lixeira(mensagem)
                     self.enviar_mensagem('capacidade maxima da lixeira alterada')
                 elif mensagem.split('/')[0] == "adicionar lixo":
                     self.adicionar_lixo(mensagem)
                    
+    def esvaziar_lixeira(self):
+        if self.carga_lixeira > 0:
+            self.remover_dados_lixeira_servidor()
+            self.definir_carga(0)
+            self.enviar_informacoes_lixeira()
+            self.informar_lixeira_esvaziada()
+            print('lixeira esvaziada')
+        else:
+            print('lixeira já está vazia')
+
+    def informar_lixeira_esvaziada(self):
+        self.enviar_mensagem("notificar lixeira esvaziada/"+self.latitude_lixeira+'/'+self.longitude_lixeira)
+
+    def alterar_status(self, mensagem):
+        if mensagem.split('/')[1] != self.status_lixeira and mensagem.split('/')[1] == "aberta" or mensagem.split('/')[1] == "fechada":                      
+            self.remover_dados_lixeira_servidor()
+            self.definir_status_lixeira(mensagem)
+            self.enviar_informacoes_lixeira()    
 
     def remover_dados_lixeira_servidor(self):
         dados_lixeira = {

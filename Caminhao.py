@@ -1,6 +1,7 @@
 import json
 import socket
 import threading
+from time import sleep
 
 class Caminhao:
 
@@ -21,8 +22,11 @@ class Caminhao:
                 continue
             else:
                 break
-        self.cadastrar_caminhao()
-        self.receber_mensagem()
+        self.cadastrar_caminhao()        
+        thread = threading.Thread(target= self.receber_mensagem)
+        thread.daemon = True
+        thread.start()
+        self.realizar_trajeto()
 
     #Cadastra os dados do caminhão no servidor
     def cadastrar_caminhao(self):
@@ -83,37 +87,17 @@ class Caminhao:
             self.lista_lixeiras.insert(new_index,self.lista_lixeiras.pop(old_index))
             self.enviar_mensagem('posição da lixeira alterada com sucesso.')
 
-    #Envia uma requisição ao servidor para retornar os dados de todas lixeiras cadastradas no mesmo a fim de criar o percurso
-    def definir_percurso_lixeiras(self):
-        response = self.caminhao_enviar("dados das lixeiras/")
-        mensagem = response.decode('utf-8')
-        if mensagem == 'não há lixeira cadastradas.':
-            print("Não há lixeiras cadastradas no sistema.")
-        else:
-            lixeiras_json = json.loads(mensagem)
-            self.lista_lixeiras = lixeiras_json.get('dados')
-            print('percurso das lixeiras obtido.')
-
-    #Envia em um JSON a lista com o percurso das lixeiras a serem coletadas
-    def percurso_das_lixeiras(self):
-        percuso_lixeiras = {"dados":self.lista_lixeiras}
-        trajeto_lixeiras = json.dumps(percuso_lixeiras)
-        self.enviar_mensagem(trajeto_lixeiras)
-
-    #Método que tenta esvaziar a primeira lixeira da lista, fazendo a validação se ela está desbloqueada e então enviando para o servidor a requisição
-    #para alterar os dados da lixeira
-    def esvaziar_lixeira(self):
-        dados_lixeira = self.lista_lixeiras.pop(0)
-        if dados_lixeira.get('status') == 'aberta':
-            latitude = dados_lixeira.get('posicao').split(',')[0]
-            longitude = dados_lixeira.get('posicao').split(',')[0]
-            response = self.enviar_mensagem('esvaziar lixeira/'+latitude+'/'+longitude)
-            if response.decode('utf-8') == 'lixeira esvaziada':
-                print("lixeira esvaziada.")
-            else:
-                print("Não foi possivel esvaziar a lixeira.")
-        else:
-            print("A lixeira na posicao ",dados_lixeira.get('posicao')," está bloqueada.")
+    def realizar_trajeto(self):
+        while True:
+            for lixeira in self.lista_lixeiras:
+                print("Realizando o trajeto.")
+                self.lista_lixeiras.pop(0)
+                if lixeira.get('status') == 'aberta' and float(lixeira.get("carga") > 0):
+                    latitude = lixeira.get('posicao').split(',')[0]
+                    longitude = lixeira.get('posicao').split(',')[1]
+                    self.enviar_mensagem('esvaziar lixeira/'+latitude+'/'+longitude)  
+                    print("lixeira ",lixeira.get('posicao')," foi esvaziada.")
+                sleep(2)      
 
 if __name__ == "__main__":
     caminhao = Caminhao()
