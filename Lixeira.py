@@ -78,11 +78,10 @@ class Lixeira:
             if dados:
                 mensagem = dados.decode('utf-8')
                 if mensagem.split('/')[0] == 'alterar status':
-                    if mensagem.split('/')[1] == self.status_lixeira():
-                        self.enviar_mensagem('novo status é igual ao atual', self.cliente_socket)
-                    else:
+                    if mensagem.split('/')[1] != self.status_lixeira and mensagem.split('/')[1] == "aberta" or mensagem.split('/')[1] == "fechada":                      
+                        self.remover_dados_lixeira_servidor()
                         self.definir_status_lixeira(mensagem)
-                        self.enviar_mensagem('status alterado')                                   
+                        self.enviar_informacoes_lixeira()                                  
                 elif mensagem.split('/')[0] == "esvaziar lixeira":
                     if self.carga_lixeira() > 0:
                         self.definir_carga(0)
@@ -98,6 +97,15 @@ class Lixeira:
                     else:
                         self.definir_carga(mensagem)
                         self.enviar_mensagem('lixo adicionado a lixeira com sucesso')
+
+    def remover_dados_lixeira_servidor(self):
+        dados_lixeira = {
+            "carga": self.carga_lixeira,
+            "status": self.status_lixeira,
+            "posicao": self.posicao_lixeira()
+        }
+        response = json.dumps(dados_lixeira)
+        self.enviar_mensagem("remover dados da lixeira/"+response)
 
     def enviar_informacoes_lixeira(self):
         dados_lixeira = {
@@ -131,6 +139,7 @@ class Lixeira:
     #Este método altera o status atual da lixeira via uma requisição do servidor
     def definir_status_lixeira(self, mensagem):
         self.status_lixeira = mensagem.split('/')[1]
+        print("status da lixeira alterado para ",self.status_lixeira)
 
     def posicao_lixeira(self):
         posicao =  self.latitude_lixeira+','+self.longitude_lixeira

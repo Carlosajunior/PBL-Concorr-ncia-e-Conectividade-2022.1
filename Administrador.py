@@ -53,9 +53,10 @@ class Administrador:
                     if mensagem.split('/')[1] != 'não há lixeiras cadastradas.':
                         string_json = mensagem.split('/')[1]
                         lista_lixeiras = json.loads(string_json).get("dados")
+                        print("\n")
                         print(lista_lixeiras)
                     else:
-                        print("Não há lixeiras cadastradas no servidor.")            
+                        print("\nNão há lixeiras cadastradas no servidor.")            
             except Exception as e: 
                 print ("Ocorreu uma exceção:  ",str(e)) 
 
@@ -75,11 +76,7 @@ class Administrador:
     #Envia uam requisição para alterar o status de uma lixeira, usando como identificador sua latitude e longitude
     def alterar_status_lixeira(self,latitude, longitude, status):
         mensagem = 'alterar status/'+latitude+'/'+longitude+'/'+status
-        response = self.administrador_enviar(self, mensagem)
-        if response == 'status alterado':
-            print('status alterado com sucesso.')
-        else:
-            print('ocorreu um erro ao tentar alterar o status.')
+        self.administrador_enviar(mensagem)
 
     #Altera a posição de uma lixeira no percurso do caminhão, usando como identificador sua latitude e longitude e informando a nova posição
     def alterar_percurso(self, latitude, longitude, posicao):

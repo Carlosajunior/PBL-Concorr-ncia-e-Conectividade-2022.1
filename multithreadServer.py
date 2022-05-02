@@ -59,6 +59,8 @@ class Server:
                     self.cadastrar_caminhao(cliente)
                 elif mensagem.split('/')[0] == "cadastrar administrador":
                     self.cadastrar_administrador(cliente)
+                elif mensagem.split('/')[0] == "remover dados da lixeira":
+                    self.remover_dados_lixeira(mensagem)
                 elif mensagem.split('/')[0] == "encerrar conexao":
                     break
         cliente.close()
@@ -78,13 +80,16 @@ class Server:
         key = latitude+','+longitude
         self.lixeiras.update({key: cliente})
         print("lixeira cadastrada com sucesso.")                
-        
+
+    def remover_dados_lixeira(self, mensagem):
+        response = mensagem.split('/')[1]
+        self.dados.remove(json.loads(response))
+
     def alterar_status_lixeira(self,mensagem):
         key = mensagem.split('/')[1]+','+mensagem.split('/')[2]
-        endereco = self.lixeiras.get(key)
+        cliente = self.lixeiras.get(key)
         msg = 'alterar status/'+mensagem.split('/')[3]
-        response = self.servidor_socket.sendto(bytes(msg,'utf-8'), endereco)
-        self.enviar_mensagem(response)
+        cliente.send(bytes(msg, 'utf-8'))
 
     def atualizar_informacoes_lixeiras_administrador(self):
         if len(self.administrador.keys()) > 0:
