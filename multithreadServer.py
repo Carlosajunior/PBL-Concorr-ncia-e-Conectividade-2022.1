@@ -45,6 +45,7 @@ class Server:
             dados = cliente.recv(self.payload)            
             if dados:
                 mensagem = dados.decode('utf-8')
+                print(mensagem)
                 if mensagem.split('/')[0] == "alterar status":
                     self.alterar_status_lixeira(mensagem)
                 elif mensagem.split('/')[0] == "cadastrar dados das lixeiras":
@@ -61,6 +62,8 @@ class Server:
                     self.cadastrar_administrador(cliente)
                 elif mensagem.split('/')[0] == "remover dados da lixeira":
                     self.remover_dados_lixeira(mensagem)
+                elif mensagem.split('/')[0] == "adicionar lixo":
+                    self.adicionar_lixo_lixeira(mensagem)
                 elif mensagem.split('/')[0] == "encerrar conexao":
                     break
         cliente.close()
@@ -81,6 +84,12 @@ class Server:
         self.lixeiras.update({key: cliente})
         print("lixeira cadastrada com sucesso.")                
 
+    def adicionar_lixo_lixeira(self, mensagem):
+        key = mensagem.split('/')[1]+','+mensagem.split('/')[2]
+        cliente = self.lixeiras.get(key)
+        msg = 'adicionar lixo/'+mensagem.split('/')[3]
+        cliente.send(bytes(msg, 'utf-8'))
+
     def remover_dados_lixeira(self, mensagem):
         response = mensagem.split('/')[1]
         self.dados.remove(json.loads(response))
@@ -99,6 +108,7 @@ class Server:
 
     def cadastrar_dados_das_lixeiras(self, mensagem):
         response = mensagem.split('/')[1]
+        print(response)
         self.dados.append(json.loads(response))
         self.atualizar_informacoes_lixeiras_administrador()        
 

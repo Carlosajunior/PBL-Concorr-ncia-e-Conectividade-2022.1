@@ -27,13 +27,19 @@ class Administrador:
         thread.start()
         self.cadastrar_administrador()
         while True:
-            opcao = input("Escolha uma das opções:\n 1-Alterar status de uma lixeira \n 2-Alterar o trajeto do caminhão")
+            opcao = input("Escolha uma das opções:\n 1-Alterar status de uma lixeira \n 2-Alterar o trajeto do caminhão \n 3-Adicionar lixo a uma lixeira")
             if opcao == '1':
                 print("Informe os dados da lixeira que deseja modificar o status: \n")
                 latitude = input("Latitude: \n")
                 longitude = input("Longitude: \n")
                 status = input("Novo status da lixeira: \n")
                 self.alterar_status_lixeira(latitude, longitude, status)
+            if opcao == '3':
+                print("Informe os dados da lixeira que deseja adicionar lixo: \n")
+                latitude = input("Latitude: \n")
+                longitude = input("Longitude: \n")
+                lixo = input("Quantidade de lixo a ser adicionada: \n")
+                self.adicionar_lixo_lixeira(latitude,longitude,lixo)
 
     #Realiza a conexão do administrador ao servidor utilizando o protocolo TCP/IP
     def administrador_conectar(self,ip, porta):
@@ -72,6 +78,10 @@ class Administrador:
     #Este método cadastra os dados do administrador no servidor
     def cadastrar_administrador(self):
         self.administrador_enviar("cadastrar administrador/")
+
+    def adicionar_lixo_lixeira(self,latitude,longitude,lixo):
+        mensagem = 'adicionar lixo/'+latitude+'/'+longitude+'/'+lixo
+        self.administrador_enviar(mensagem)
 
     #Envia uam requisição para alterar o status de uma lixeira, usando como identificador sua latitude e longitude
     def alterar_status_lixeira(self,latitude, longitude, status):

@@ -92,14 +92,12 @@ class Lixeira:
                     self.capacidade_lixeira(mensagem)
                     self.enviar_mensagem('capacidade maxima da lixeira alterada')
                 elif mensagem.split('/')[0] == "adicionar lixo":
-                    if float(mensagem.split('/')[1]) + self.carga_lixeira() > self.capacidade_lixeira():
-                        self.enviar_mensagem('a carga de lixo ultrapassa a capacidade máxima da lixeira')
-                    else:
-                        self.definir_carga(mensagem)
-                        self.enviar_mensagem('lixo adicionado a lixeira com sucesso')
+                    self.adicionar_lixo(mensagem)
+                   
 
     def remover_dados_lixeira_servidor(self):
         dados_lixeira = {
+            "capacidade": self.capacidade_lixeira,
             "carga": self.carga_lixeira,
             "status": self.status_lixeira,
             "posicao": self.posicao_lixeira()
@@ -132,13 +130,23 @@ class Lixeira:
         else:
             print("A carga de lixo ultrapassa a capacidade máxima da lixeira.")
 
+    def adicionar_lixo(self, mensagem):
+        if float(mensagem.split('/')[1]) + self.carga_lixeira > self.capacidade_lixeira:
+            print('a carga de lixo ultrapassa a capacidade máxima da lixeira')
+        elif self.status_lixeira == "fechada":
+            print("a lixeira está bloqueada, não é possível adicionar lixo")
+        else:
+            self.remover_dados_lixeira_servidor()
+            self.definir_carga(mensagem)
+            self.enviar_informacoes_lixeira()
+
     #Este método é responsável por adicionar mais lixo a lixeira via uma requisição do servidor
     def definir_carga(self, mensagem):
-        if self.carga_lixeira + float(mensagem.split('/')[1]) <= self.carga_lixeira:
+        if self.carga_lixeira + float(mensagem.split('/')[1]) <= self.capacidade_lixeira:
             self.carga_lixeira = self.carga_lixeira + float(mensagem.split('/')[1])
-            self.enviar_mensagem("Lixo adicionado com sucesso.")
+            print("Lixo adicionado com sucesso.")
         else:
-            self.enviar_mensagem('A carga de lixo ultrapassa a capacidade maxima da lixeira.')
+            print('A carga de lixo ultrapassa a capacidade maxima da lixeira.')
 
     #Este método altera o status atual da lixeira via uma requisição do servidor
     def definir_status_lixeira(self, mensagem):
