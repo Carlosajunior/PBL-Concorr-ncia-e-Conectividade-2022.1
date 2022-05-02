@@ -122,9 +122,12 @@ class Lixeira:
 
     #Este método insere mais lixo na lixeira através de dados inseridos pelo terminal
     def inserir_lixo(self, lixo):
-        if lixo + self.carga_lixeira <= self.carga_lixeira:
-            self.carga_lixeira = self.carga_lixeira() + lixo
-            print("Lixo adicionado com sucesso.")
+        if lixo + self.carga_lixeira <= self.carga_lixeira :
+            if self.status_lixeira == "aberta":
+                self.carga_lixeira = self.carga_lixeira() + lixo
+                print("Lixo adicionado com sucesso.")
+            elif self.status_lixeira == "fechada":
+                print("A lixeira está bloqueada.")
         else:
             print("A carga de lixo ultrapassa a capacidade máxima da lixeira.")
 
