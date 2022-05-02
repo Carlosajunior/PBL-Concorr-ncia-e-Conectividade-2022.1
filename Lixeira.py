@@ -33,26 +33,32 @@ class Lixeira:
                 continue
             else:
                 break
-        self.cadastrar_lixeira()
+        self.cadastrar_lixeira()        
         thread = threading.Thread(target= self.receber_mensagem)
+        thread.daemon = True
         thread.start()
+        self.enviar_informacoes_lixeira()
         while True:
             opcao = input("Escolha uma das opções: \n 1-Inserir carga de lixo \n 2-Encerrar programa \n")
             if opcao == '2':
+                self.enviar_mensagem("encerrar conexao/")
                 break
             elif opcao == '1':
                 lixo = input("Insira a quantidade de lixo a ser adicionado a lixeira: ")
                 self.inserir_lixo(float(lixo))
-        sys.exit("Encerrando o programa.")     
+        sys.exit()     
 
     #Faz a conexão da lixeira ao servidor usando o protocolo TCP/IP
     def lixeira_conectar(self,ip, porta):
         #Tenta estabelecer uma conexão com o endereço de IP e a porta informados
         print("Se conectando ao ip ", ip," na porta ",porta,".")
         endereco = (ip, porta)
-        self.cliente_socket.connect(endereco)
-        print("Conexão efetuada com sucesso.")        
-
+        try:
+            self.cliente_socket.connect(endereco)
+            print("Conexão efetuada com sucesso.")   
+        except socket.error as e:
+            print(str(e))
+           
     #Este método recebe uma mensagem no formato de string e a codifica no formato utf-8 em bytes para enviar para o servidor
     def enviar_mensagem(self, mensagem):
         try: 
@@ -76,32 +82,31 @@ class Lixeira:
                         self.enviar_mensagem('novo status é igual ao atual', self.cliente_socket)
                     else:
                         self.definir_status_lixeira(mensagem)
-                        self.enviar_mensagem('status alterado', self.cliente_socket)                   
-                elif mensagem.split('/')[0] == "dados das lixeiras":
-                    print('recebida requisição dos dados da lixeira.')                                                                
-                    dados_lixeira = {
-                        "carga": self.carga_lixeira(),
-                        "status": self.status_da_lixeira(),
-                        "posicao": self.posicao_lixeira()
-                    }
-                    response = json.dumps(dados_lixeira)
-                    print('enviando os dados.')
-                    self.enviar_mensagem(response, self.cliente_socket) 
+                        self.enviar_mensagem('status alterado')                                   
                 elif mensagem.split('/')[0] == "esvaziar lixeira":
                     if self.carga_lixeira() > 0:
                         self.definir_carga(0)
-                        self.enviar_mensagem('lixeira esvaziada', self.cliente_socket)
+                        self.enviar_mensagem('lixeira esvaziada')
                     else:
-                        self.enviar_mensagem('lixeira já está vazia', self.cliente_socket)
+                        self.enviar_mensagem('lixeira já está vazia')
                 elif mensagem.split('/')[0] == "definir capacidade":
                     self.capacidade_lixeira(mensagem)
-                    self.enviar_mensagem('capacidade maxima da lixeira alterada', self.cliente_socket)
+                    self.enviar_mensagem('capacidade maxima da lixeira alterada')
                 elif mensagem.split('/')[0] == "adicionar lixo":
                     if float(mensagem.split('/')[1]) + self.carga_lixeira() > self.capacidade_lixeira():
-                        self.enviar_mensagem('a carga de lixo ultrapassa a capacidade máxima da lixeira', self.cliente_socket)
+                        self.enviar_mensagem('a carga de lixo ultrapassa a capacidade máxima da lixeira')
                     else:
                         self.definir_carga(mensagem)
-                        self.enviar_mensagem('lixo adicionado a lixeira com sucesso', self.cliente_socket)
+                        self.enviar_mensagem('lixo adicionado a lixeira com sucesso')
+
+    def enviar_informacoes_lixeira(self):
+        dados_lixeira = {
+            "carga": self.carga_lixeira,
+            "status": self.status_lixeira,
+            "posicao": self.posicao_lixeira()
+        }
+        response = json.dumps(dados_lixeira)
+        self.enviar_mensagem("cadastrar dados das lixeiras/"+response)
 
     #Este método é responsável por alterar a capacidade maxima da lixeira através de uma requisição do servidor
     def definir_capacidade(self, mensagem):
@@ -127,9 +132,6 @@ class Lixeira:
     def definir_status_lixeira(self, mensagem):
         self.status_lixeira = mensagem.split('/')[1]
 
-    def status_da_lixeira(self):
-        return self.status_lixeira
-
     def posicao_lixeira(self):
         posicao =  self.latitude_lixeira+','+self.longitude_lixeira
         return posicao
@@ -137,7 +139,7 @@ class Lixeira:
     #Este método cadastra os dados da lixeira no servidor
     def cadastrar_lixeira(self):
         mensagem = "cadastrar lixeira/"+self.latitude_lixeira+'/'+self.longitude_lixeira
-        self.enviar_mensagem(mensagem)
+        self.enviar_mensagem(mensagem)        
 
 if __name__ == "__main__":
     lixeira = Lixeira()

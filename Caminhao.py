@@ -6,6 +6,7 @@ class Caminhao:
 
     def __init__(self):
         self.lista_lixeiras = []
+        self.payload = 2048
         self.cliente_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     #É a função principal do caminhão, que faz a sua conexão com o servidor, seu cadastro e fica aguardando por novas mensagens do servidor
@@ -33,7 +34,10 @@ class Caminhao:
         #Tenta estabelecer uma conexão com o endereço de IP e a porta informados
         print("Se conectando ao ip ", ip," na porta ",porta,".")
         endereco = (ip, porta)
-        self.cliente_socket.connect(endereco)
+        try:
+            self.cliente_socket.connect(endereco)
+        except socket.error as e:
+            print(str(e))
 
     #Este método recebe uma mensagem no formato de string e a codifica no formato utf-8 em bytes para enviar para o servidor
     def enviar_mensagem(self, mensagem):
