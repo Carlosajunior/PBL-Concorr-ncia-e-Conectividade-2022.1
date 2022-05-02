@@ -106,11 +106,18 @@ class Server:
             mensagem = "dados das lixeiras/"+json.dumps(dados_lixeiras) 
             self.enviar_mensagem(mensagem, self.administrador.get("administrador"))
 
+    def atualizar_informacoes_lixeiras_caminhao(self):
+        if len(self.administrador.keys()) > 0:
+            dados_lixeiras = {"dados":self.dados}
+            mensagem = "dados das lixeiras/"+json.dumps(dados_lixeiras) 
+            self.enviar_mensagem(mensagem, self.caminhao.get("caminhao"))
+
     def cadastrar_dados_das_lixeiras(self, mensagem):
         response = mensagem.split('/')[1]
         print(response)
         self.dados.append(json.loads(response))
-        self.atualizar_informacoes_lixeiras_administrador()        
+        self.atualizar_informacoes_lixeiras_administrador()   
+        self.atualizar_informacoes_lixeiras_caminhao()     
 
     def dados_das_lixeiras(self,cliente):        
         if len(self.lixeiras.keys()) > 0:
@@ -141,6 +148,8 @@ class Server:
     def cadastrar_caminhao(self, cliente):
         self.caminhao.update({"caminhao": cliente})
         print("Caminhão cadastrado;")
+        print(self.caminhao)
+        self.dados_das_lixeiras(cliente)
 
 if __name__ == "__main__":
     servidor = Server()

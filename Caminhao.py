@@ -22,8 +22,7 @@ class Caminhao:
             else:
                 break
         self.cadastrar_caminhao()
-        thread = threading.Thread(target= self.receber_mensagem)
-        thread.start()
+        self.receber_mensagem()
 
     #Cadastra os dados do caminhão no servidor
     def cadastrar_caminhao(self):
@@ -52,13 +51,22 @@ class Caminhao:
     #Este método é responsável por receber as mensagens enviadas pelo servidor, e a partir de seu conteudo, executar algum dos métodos
     def receber_mensagem(self):
         while True:
-            dados = self.cliente_socket.recv(self.payload)
-            if dados:
-                    mensagem = dados.decode('utf-8')   
-                    if mensagem.split('/')[0] == "alterar trajeto":
-                        self.alterar_trajeto_caminhao(mensagem)
-                    elif mensagem.split('/')[0] == "trajeto das lixeiras":
-                        self.percurso_das_lixeiras()
+            try:
+                dados = self.cliente_socket.recv(self.payload)
+                if dados:
+                        mensagem = dados.decode('utf-8')   
+                        if mensagem.split('/')[0] == "alterar trajeto":
+                            self.alterar_trajeto_caminhao(mensagem)
+                        elif mensagem.split('/')[0] == "dados das lixeiras":
+                            if mensagem.split('/')[1] != 'não há lixeiras cadastradas.':
+                                string_json = mensagem.split('/')[1]
+                                lista_lixeiras = json.loads(string_json).get("dados")
+                                print("\n")
+                                print(lista_lixeiras)
+                            else:
+                                print("\nNão há lixeiras cadastradas no servidor.")        
+            except Exception as e: 
+                print ("Ocorreu uma exceção:  ",str(e)) 
 
     #Esse método é responsavel por receber uma string que contem a posição atual de uma lixeira na lista de percurso do caminhão e a posição
     #nova que essa lixeira deve ser colocada

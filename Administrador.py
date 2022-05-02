@@ -54,15 +54,17 @@ class Administrador:
     def receber_mensagem(self):
         while True:
             try:
-                mensagem = self.administrador_socket.recv(self.payload).decode('utf-8')
-                if mensagem.split('/')[0] == "dados das lixeiras":
-                    if mensagem.split('/')[1] != 'não há lixeiras cadastradas.':
-                        string_json = mensagem.split('/')[1]
-                        lista_lixeiras = json.loads(string_json).get("dados")
-                        print("\n")
-                        print(lista_lixeiras)
-                    else:
-                        print("\nNão há lixeiras cadastradas no servidor.")            
+                dados = self.administrador_socket.recv(self.payload)
+                if dados:
+                    mensagem = dados.decode('utf-8')
+                    if mensagem.split('/')[0] == "dados das lixeiras":
+                        if mensagem.split('/')[1] != 'não há lixeiras cadastradas.':
+                            string_json = mensagem.split('/')[1]
+                            lista_lixeiras = json.loads(string_json).get("dados")
+                            print("\n")
+                            print(lista_lixeiras)
+                        else:
+                            print("\nNão há lixeiras cadastradas no servidor.")            
             except Exception as e: 
                 print ("Ocorreu uma exceção:  ",str(e)) 
 
