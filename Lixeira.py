@@ -109,6 +109,7 @@ class Lixeira:
 
     def enviar_informacoes_lixeira(self):
         dados_lixeira = {
+            "capacidade": self.capacidade_lixeira,
             "carga": self.carga_lixeira,
             "status": self.status_lixeira,
             "posicao": self.posicao_lixeira()
