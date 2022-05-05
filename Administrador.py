@@ -1,8 +1,10 @@
 import json
 import socket
+import threading
 
 class Administrador:
     def __init__(self):
+        self.payload = 2048
         #Configuração do socket para atender ao protocolo TCP/IP
         self.administrador_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
@@ -19,33 +21,59 @@ class Administrador:
                 print("Ocorreu um erro ao tentar se conectar ao endereço informado. Insira os dados novamente.")
                 continue
             else:
-                break
+                break        
+        thread = threading.Thread(target= self.receber_mensagem)
+        thread.daemon = True
+        thread.start()
         self.cadastrar_administrador()
-        # thread = threading.Thread(target= self.receber_mensagem)
-        # thread.start()
         while True:
-            self.dados_das_lixeiras()
-            opcao = input("Escolha uma das opções:\n 1-Alterar status de uma lixeira \n 2-Alterar o trajeto do caminhão")
+            opcao = input("Escolha uma das opções:\n 1-Alterar status de uma lixeira \n 2-Alterar o trajeto do caminhão \n 3-Adicionar lixo a uma lixeira")
             if opcao == '1':
                 print("Informe os dados da lixeira que deseja modificar o status: \n")
                 latitude = input("Latitude: \n")
                 longitude = input("Longitude: \n")
                 status = input("Novo status da lixeira: \n")
                 self.alterar_status_lixeira(latitude, longitude, status)
+            if opcao == '3':
+                print("Informe os dados da lixeira que deseja adicionar lixo: \n")
+                latitude = input("Latitude: \n")
+                longitude = input("Longitude: \n")
+                lixo = input("Quantidade de lixo a ser adicionada: \n")
+                self.adicionar_lixo_lixeira(latitude,longitude,lixo)
 
     #Realiza a conexão do administrador ao servidor utilizando o protocolo TCP/IP
     def administrador_conectar(self,ip, porta):
         #Tenta estabelecer uma conexão com o endereço de IP e a porta informados
         print("Se conectando ao ip "+ip+" na porta "+str(porta)+".")
         endereco = (ip, porta)
-        self.administrador_socket.connect(endereco)
+        try:
+            self.administrador_socket.connect(endereco)
+        except socket.error as e:
+            print(str(e))
+
+    def receber_mensagem(self):
+        while True:
+            try:
+                dados = self.administrador_socket.recv(self.payload)
+                if dados:
+                    mensagem = dados.decode('utf-8')
+                    if mensagem.split('/')[0] == "dados das lixeiras":
+                        if mensagem.split('/')[1] != 'não há lixeiras cadastradas.':
+                            string_json = mensagem.split('/')[1]
+                            lista_lixeiras = json.loads(string_json).get("dados")
+                            print("\n")
+                            print(lista_lixeiras)                    
+                        else:
+                            print("\nNão há lixeiras cadastradas no servidor.")
+                    elif mensagem.split('/')[0] == "notificar lixeira esvaziada":
+                        print("A lixeira de coordenadas ", mensagem.split('/')[1],",",mensagem.split('/')[2]," foi esvaziada pelo caminhão.")
+            except Exception as e: 
+                print ("Ocorreu uma exceção:  ",str(e)) 
 
     #Este método recebe uma mensagem no formato de string e a codifica no formato utf-8 em bytes para enviar para o servidor
     def administrador_enviar(self,mensagem):
         try:             
             self.administrador_socket.send(bytes(mensagem,'utf-8'))
-            response = self.administrador_socket.recv(2048)
-            return response
         except socket.error as e: 
             print ("Socket error: ",str(e)) 
         except Exception as e: 
@@ -55,14 +83,14 @@ class Administrador:
     def cadastrar_administrador(self):
         self.administrador_enviar("cadastrar administrador/")
 
+    def adicionar_lixo_lixeira(self,latitude,longitude,lixo):
+        mensagem = 'adicionar lixo/'+latitude+'/'+longitude+'/'+lixo
+        self.administrador_enviar(mensagem)
+
     #Envia uam requisição para alterar o status de uma lixeira, usando como identificador sua latitude e longitude
     def alterar_status_lixeira(self,latitude, longitude, status):
         mensagem = 'alterar status/'+latitude+'/'+longitude+'/'+status
-        response = self.administrador_enviar(self, mensagem)
-        if response == 'status alterado':
-            print('status alterado com sucesso.')
-        else:
-            print('ocorreu um erro ao tentar alterar o status.')
+        self.administrador_enviar(mensagem)
 
     #Altera a posição de uma lixeira no percurso do caminhão, usando como identificador sua latitude e longitude e informando a nova posição
     def alterar_percurso(self, latitude, longitude, posicao):
@@ -72,15 +100,7 @@ class Administrador:
             print('posição da lixeira alterada com sucesso.')
         else:
             print(response)
-
-    #Busca os dados de todas as lixeiras cadastradas no servidor ao enviar uma requisição destes dados para o mesmo
-    def dados_das_lixeiras(self): 
-        print('buscando dados das lixeiras.\n')
-        response = self.administrador_enviar("dados das lixeiras/")
-        print('dados recebidos.\n')
-        string_json = response.decode('utf-8')
-        lista_lixeiras = json.loads(string_json).get("dados")
-        print(lista_lixeiras)
+                
 
 if __name__ == "__main__":
     administrador = Administrador()
