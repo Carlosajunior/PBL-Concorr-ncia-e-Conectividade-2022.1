@@ -53,7 +53,7 @@ class Server:
                 elif mensagem.split('/')[0] == "esvaziar lixeira":
                     self.esvaziar_lixeira(mensagem)
                 elif mensagem.split('/')[0] == "alterar trajeto":
-                    self.alterar_trajeto_caminhao(mensagem)
+                    self.alterar_ordem_lixeiras(mensagem)
                 elif mensagem.split('/')[0] == "cadastrar lixeira":
                     self.cadastrar_lixeira(mensagem,cliente)
                 elif mensagem.split('/')[0] == "cadastrar caminhao":
@@ -68,9 +68,15 @@ class Server:
                     self.notificar_administrador_lixeira_esvaziada(mensagem)
                 elif mensagem.split('/')[0] == "iniciar trajeto":
                     self.iniciar_trajeto_caminhao()
+                elif mensagem.split('/')[0] == "atualizar trajeto":
+                    self.notificar_novo_trajeto_administrador(mensagem)
                 elif mensagem.split('/')[0] == "encerrar conexao":
                     break
         cliente.close()
+
+    #Envia uma requisição ao administrador com o novo trajeto do caminhão
+    def notificar_novo_trajeto_administrador(self,mensagem):
+        self.enviar_mensagem("novo trajeto/"+mensagem.split('/')[1], self.administrador.get("administrador"))
 
     #Notifica o administrador que uma lixeira foi esvaziada
     def notificar_administrador_lixeira_esvaziada(self, mensagem):
@@ -152,10 +158,9 @@ class Server:
         self.enviar_mensagem("esvaziar lixeira/", cliente)
 
     def alterar_ordem_lixeiras(self, mensagem):
-        endereco = self.caminhao.get('caminhao')
-        msg = 'alterar trajeto/'+mensagem.split('/')[1]+'/'+mensagem.split('/')[2]
-        response = self.servidor_socket.sendto(bytes(msg,'utf-8'), endereco)
-        self.enviar_mensagem(response)
+        cliente = self.caminhao.get('caminhao')
+        msg = 'alterar trajeto/'+mensagem.split('/')[1]+'/'+mensagem.split('/')[2]+'/'+mensagem.split('/')[3]
+        self.enviar_mensagem(msg, cliente)
     
     #Envia uma requisição para um caminhão, caso haja algum cadastrado no servidor, para iniciar o trajeto das lixeiras
     def iniciar_trajeto_caminhao(self):

@@ -156,8 +156,10 @@ class Lixeira:
     def inserir_lixo(self, lixo):
         if lixo + self.carga_lixeira <= self.capacidade_lixeira :
             if self.status_lixeira == "aberta":
-                self.carga_lixeira = self.carga_lixeira() + lixo
+                self.remover_dados_lixeira_servidor()
+                self.carga_lixeira = self.carga_lixeira + lixo
                 print("Lixo adicionado com sucesso.")
+                self.enviar_informacoes_lixeira()
             elif self.status_lixeira == "fechada":
                 print("A lixeira está bloqueada.")
         else:

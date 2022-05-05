@@ -73,17 +73,22 @@ class Caminhao:
     #Esse método é responsavel por receber uma string que contem a posição atual de uma lixeira na lista de percurso do caminhão e a posição
     #nova que essa lixeira deve ser colocada
     def alterar_trajeto_caminhao(self, mensagem):
-        old_index = mensagem.split('/')[1]
-        new_index = mensagem.split('/')[2]
-        if old_index > len(self.lista_lixeiras) or old_index < len(self.lista_lixeiras):
-            self.enviar_mensagem('index da posição atual da lixeira na lista inválido.')
-        elif new_index > len(self.lista_lixeiras) or new_index < len(self.lista_lixeiras):
-            self.enviar_mensagem('index da posição nova da lixeira na lista inválido.')
-        elif new_index == len(self.lista_lixeiras):
-            self.enviar_mensagem('index é referente a posição atual da lixeira.')
+        coordenada = mensagem.split('/')[1]+','+mensagem.split('/')[2]
+        index = int(mensagem.split('/')[3]) - 1
+        if index > len(self.lista_lixeiras) or index < 0:
+            print('index da posição nova da lixeira na lista inválido.')
         else:
-            self.lista_lixeiras.insert(new_index,self.lista_lixeiras.pop(old_index))
-            self.enviar_mensagem('posição da lixeira alterada com sucesso.')
+            old_index = 0
+            for lixeira in self.lista_lixeiras:
+                if lixeira.get("posicao") == coordenada:
+                    old_index = self.lista_lixeiras.index(lixeira)
+                    break
+            lixeira =  self.lista_lixeiras.pop(old_index)
+            self.lista_lixeiras.insert(index, lixeira)
+            print("posição alterada.")
+            print(self.lista_lixeiras)
+            response = json.dumps({"dados":self.lista_lixeiras})
+            self.enviar_mensagem("atualizar trajeto/"+response)
 
     #Acessa a lista das lixeiras que devem ser verificadas, verifica se a lixeira está com status "aberta" e se ela possui
     #alguma carga de lixo, então envia uma requisição ao servidor solicitando que a lixeira em questão seja esvaziada, após 

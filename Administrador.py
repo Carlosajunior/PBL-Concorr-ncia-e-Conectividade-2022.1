@@ -4,6 +4,7 @@ import threading
 
 class Administrador:
     def __init__(self):
+        self.trajeto_caminhao = []
         self.payload = 2048
         #Configuração do socket para atender ao protocolo TCP/IP
         self.administrador_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -27,13 +28,28 @@ class Administrador:
         thread.start()
         self.cadastrar_administrador()
         while True:
-            opcao = input("Escolha uma das opções:\n 1-Alterar status de uma lixeira \n 2-Alterar o trajeto do caminhão \n 3-Adicionar lixo a uma lixeira \n 4-Iniciar o trajeto do caminhão")
+            opcao = input("Escolha uma das opções:\n 1-Alterar status de uma lixeira \n 2-Alterar o trajeto do caminhão \n 3-Adicionar lixo a uma lixeira \n 4-Iniciar o trajeto do caminhão \n")
             if opcao == '1':
                 print("Informe os dados da lixeira que deseja modificar o status: \n")
                 latitude = input("Latitude: \n")
                 longitude = input("Longitude: \n")
                 status = input("Novo status da lixeira: \n")
                 self.alterar_status_lixeira(latitude, longitude, status)
+            elif opcao == '2':
+                print("Informe os dados da lixeira que deseja modificar a posição no percurso do caminhão: \n")
+                latitude = input("Latitude: \n")
+                longitude = input("Longitude: \n")
+                posicao = input("posicao: \n")
+                while True:                    
+                    try:
+                        if int(posicao) <= 0:
+                            print("posição informado é inválida.")
+                            posicao = input("posicao: \n")
+                        elif int(posicao) > 0:
+                            break
+                    except Exception as e: 
+                        print(str(e))
+                self.alterar_percurso(latitude, longitude, posicao)
             elif opcao == '3':
                 print("Informe os dados da lixeira que deseja adicionar lixo: \n")
                 latitude = input("Latitude: \n")
@@ -45,6 +61,8 @@ class Administrador:
                 self.iniciar_trajeto_caminhao()
             else:
                 print("Numero de opção inválido")
+            if len(self.trajeto_caminhao) > 0:
+                print(self.trajeto_caminhao)
 
     #Realiza a conexão do administrador ao servidor utilizando o protocolo TCP/IP
     def administrador_conectar(self,ip, porta):
@@ -67,15 +85,22 @@ class Administrador:
                     if mensagem.split('/')[0] == "dados das lixeiras":
                         if mensagem.split('/')[1] != 'não há lixeiras cadastradas.':
                             string_json = mensagem.split('/')[1]
-                            lista_lixeiras = json.loads(string_json).get("dados")
+                            self.trajeto_caminhao = json.loads(string_json).get("dados")
                             print("\n")
-                            print(lista_lixeiras)                    
+                            print(self.trajeto_caminhao)                    
                         else:
                             print("\nNão há lixeiras cadastradas no servidor.")
                     elif mensagem.split('/')[0] == "notificar lixeira esvaziada":
                         print("A lixeira de coordenadas ", mensagem.split('/')[1],",",mensagem.split('/')[2]," foi esvaziada pelo caminhão.")
+                    elif mensagem.split('/')[0] == "novo trajeto":
+                        self.atualizar_trajeto_caminhao(mensagem)
             except Exception as e: 
                 print ("Ocorreu uma exceção:  ",str(e)) 
+
+    def atualizar_trajeto_caminhao(self,mensagem):
+        string_json = mensagem.split('/')[1]
+        self.trajeto_caminhao = json.loads(string_json).get("dados")
+        print(self.trajeto_caminhao)
 
     #Este método recebe uma mensagem no formato de string e a codifica no formato utf-8 em bytes para enviar para o servidor
     def administrador_enviar(self,mensagem):
@@ -108,11 +133,7 @@ class Administrador:
     #Altera a posição de uma lixeira no percurso do caminhão, usando como identificador sua latitude e longitude e informando a nova posição
     def alterar_percurso(self, latitude, longitude, posicao):
         mensagem = 'alterar trajeto/'+latitude+'/'+longitude+'/'+posicao
-        response = self.administrador_enviar(self, mensagem)
-        if response == 'posição da lixeira alterada':
-            print('posição da lixeira alterada com sucesso.')
-        else:
-            print(response)
+        self.administrador_enviar(mensagem)
                 
 if __name__ == "__main__":
     administrador = Administrador()
