@@ -27,19 +27,24 @@ class Administrador:
         thread.start()
         self.cadastrar_administrador()
         while True:
-            opcao = input("Escolha uma das opções:\n 1-Alterar status de uma lixeira \n 2-Alterar o trajeto do caminhão \n 3-Adicionar lixo a uma lixeira")
+            opcao = input("Escolha uma das opções:\n 1-Alterar status de uma lixeira \n 2-Alterar o trajeto do caminhão \n 3-Adicionar lixo a uma lixeira \n 4-Iniciar o trajeto do caminhão")
             if opcao == '1':
                 print("Informe os dados da lixeira que deseja modificar o status: \n")
                 latitude = input("Latitude: \n")
                 longitude = input("Longitude: \n")
                 status = input("Novo status da lixeira: \n")
                 self.alterar_status_lixeira(latitude, longitude, status)
-            if opcao == '3':
+            elif opcao == '3':
                 print("Informe os dados da lixeira que deseja adicionar lixo: \n")
                 latitude = input("Latitude: \n")
                 longitude = input("Longitude: \n")
                 lixo = input("Quantidade de lixo a ser adicionada: \n")
                 self.adicionar_lixo_lixeira(latitude,longitude,lixo)
+            elif opcao == '4':
+                print("Iniciando a coleta das lixeiras.")
+                self.iniciar_trajeto_caminhao()
+            else:
+                print("Numero de opção inválido")
 
     #Realiza a conexão do administrador ao servidor utilizando o protocolo TCP/IP
     def administrador_conectar(self,ip, porta):
@@ -92,6 +97,9 @@ class Administrador:
         mensagem = 'alterar status/'+latitude+'/'+longitude+'/'+status
         self.administrador_enviar(mensagem)
 
+    def iniciar_trajeto_caminhao(self):
+        self.administrador_enviar("iniciar trajeto/")
+
     #Altera a posição de uma lixeira no percurso do caminhão, usando como identificador sua latitude e longitude e informando a nova posição
     def alterar_percurso(self, latitude, longitude, posicao):
         mensagem = 'alterar trajeto/'+latitude+'/'+longitude+'/'+posicao
@@ -101,7 +109,6 @@ class Administrador:
         else:
             print(response)
                 
-
 if __name__ == "__main__":
     administrador = Administrador()
     administrador.main()

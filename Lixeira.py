@@ -72,7 +72,6 @@ class Lixeira:
 
     #Este método é responsável por receber as mensagens enviadas pelo servidor, e a partir de seu conteudo, executar algum dos métodos
     def receber_mensagem(self):
-        print("thread sendo executada")
         while True:
             print("Aguardando mensagem.")            
             #Recebe os dados enviados pelo cliente, até o limite do payload em bytes
@@ -90,10 +89,11 @@ class Lixeira:
                     self.adicionar_lixo(mensagem)
                    
     def esvaziar_lixeira(self):
-        if self.carga_lixeira > 0:
+        if self.carga_lixeira > 0.0:
             self.remover_dados_lixeira_servidor()
-            self.definir_carga(0)
-            self.enviar_informacoes_lixeira()
+            self.carga_lixeira = 0.0
+            self.enviar_informacoes_lixeira()            
+            sleep(1)
             self.informar_lixeira_esvaziada()
             print('lixeira esvaziada')
         else:

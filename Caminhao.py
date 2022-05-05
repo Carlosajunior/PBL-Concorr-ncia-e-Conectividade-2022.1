@@ -22,12 +22,9 @@ class Caminhao:
                 continue
             else:
                 break
-        self.cadastrar_caminhao()        
-        thread = threading.Thread(target= self.receber_mensagem)
-        thread.daemon = True
-        thread.start()
-        self.realizar_trajeto()
-
+        self.cadastrar_caminhao()                
+        self.receber_mensagem()
+        
     #Cadastra os dados do caminhão no servidor
     def cadastrar_caminhao(self):
         self.enviar_mensagem("cadastrar caminhao/")
@@ -58,17 +55,19 @@ class Caminhao:
             try:
                 dados = self.cliente_socket.recv(self.payload)
                 if dados:
-                        mensagem = dados.decode('utf-8')   
+                        mensagem = dados.decode('utf-8')  
                         if mensagem.split('/')[0] == "alterar trajeto":
                             self.alterar_trajeto_caminhao(mensagem)
                         elif mensagem.split('/')[0] == "dados das lixeiras":
                             if mensagem.split('/')[1] != 'não há lixeiras cadastradas.':
                                 string_json = mensagem.split('/')[1]
-                                lista_lixeiras = json.loads(string_json).get("dados")
+                                self.lista_lixeiras = json.loads(string_json).get("dados")
                                 print("\n")
-                                print(lista_lixeiras)
+                                print(self.lista_lixeiras)
                             else:
                                 print("\nNão há lixeiras cadastradas no servidor.")        
+                        elif mensagem.split('/')[0] == "iniciar trajeto":
+                            self.realizar_trajeto()
             except Exception as e: 
                 print ("Ocorreu uma exceção:  ",str(e)) 
 
@@ -88,7 +87,6 @@ class Caminhao:
             self.enviar_mensagem('posição da lixeira alterada com sucesso.')
 
     def realizar_trajeto(self):
-        while True:
             for lixeira in self.lista_lixeiras:
                 print("Realizando o trajeto.")
                 if lixeira.get('status') == 'aberta' and float(lixeira.get("carga") > 0.0):
@@ -96,8 +94,8 @@ class Caminhao:
                     longitude = lixeira.get('posicao').split(',')[1]
                     self.enviar_mensagem('esvaziar lixeira/'+latitude+'/'+longitude)  
                     print("lixeira ",lixeira.get('posicao')," foi esvaziada.")
-                self.lista_lixeiras.pop(0)
-                sleep(5)      
+                sleep(5)
+            self.lista_lixeiras.clear()      
 
 if __name__ == "__main__":
     caminhao = Caminhao()

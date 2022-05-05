@@ -66,6 +66,8 @@ class Server:
                     self.adicionar_lixo_lixeira(mensagem)
                 elif mensagem.split('/')[0] == "notificar lixeira esvaziada":
                     self.notificar_administrador_lixeira_esvaziada(mensagem)
+                elif mensagem.split('/')[0] == "iniciar trajeto":
+                    self.iniciar_trajeto_caminhao()
                 elif mensagem.split('/')[0] == "encerrar conexao":
                     break
         cliente.close()
@@ -142,7 +144,14 @@ class Server:
         msg = 'alterar trajeto/'+mensagem.split('/')[1]+'/'+mensagem.split('/')[2]
         response = self.servidor_socket.sendto(bytes(msg,'utf-8'), endereco)
         self.enviar_mensagem(response)
-     
+
+    def iniciar_trajeto_caminhao(self):
+        if len(self.caminhao.keys()) > 0:
+            cliente = self.caminhao.get("caminhao")
+            self.enviar_mensagem("iniciar trajeto/", cliente)
+        else:
+            print("Não caminhão cadastrado no servidor.")
+
     def cadastrar_administrador(self, cliente):
         self.administrador.update({"administrador":cliente})
         print("Administrador cadastrado.")
