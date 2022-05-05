@@ -91,13 +91,13 @@ class Caminhao:
         while True:
             for lixeira in self.lista_lixeiras:
                 print("Realizando o trajeto.")
-                self.lista_lixeiras.pop(0)
-                if lixeira.get('status') == 'aberta' and float(lixeira.get("carga") > 0):
+                if lixeira.get('status') == 'aberta' and float(lixeira.get("carga") > 0.0):
                     latitude = lixeira.get('posicao').split(',')[0]
                     longitude = lixeira.get('posicao').split(',')[1]
                     self.enviar_mensagem('esvaziar lixeira/'+latitude+'/'+longitude)  
                     print("lixeira ",lixeira.get('posicao')," foi esvaziada.")
-                sleep(2)      
+                self.lista_lixeiras.pop(0)
+                sleep(5)      
 
 if __name__ == "__main__":
     caminhao = Caminhao()
