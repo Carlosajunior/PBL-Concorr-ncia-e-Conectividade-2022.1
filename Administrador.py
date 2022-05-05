@@ -56,6 +56,8 @@ class Administrador:
         except socket.error as e:
             print(str(e))
 
+    #Responsável por receber as requisições enviadas pelo servidor, no formato de mensagens e então executar algum dos métodos a partir
+    #da requisição recebida
     def receber_mensagem(self):
         while True:
             try:
@@ -88,15 +90,18 @@ class Administrador:
     def cadastrar_administrador(self):
         self.administrador_enviar("cadastrar administrador/")
 
+    #Responsável por enviar uma requisição ao servidor para adicionar lixo a uma lixeira especifica, passando como parametro suas coordenadas
+    #de latitude e longitude
     def adicionar_lixo_lixeira(self,latitude,longitude,lixo):
         mensagem = 'adicionar lixo/'+latitude+'/'+longitude+'/'+lixo
         self.administrador_enviar(mensagem)
 
-    #Envia uam requisição para alterar o status de uma lixeira, usando como identificador sua latitude e longitude
+    #Envia uma requisição para alterar o status de uma lixeira, usando como identificador sua latitude e longitude
     def alterar_status_lixeira(self,latitude, longitude, status):
         mensagem = 'alterar status/'+latitude+'/'+longitude+'/'+status
         self.administrador_enviar(mensagem)
 
+    #Faz uma requisição ao servidor para que o trajeto do caminhão para coletar as lixeiras seja iniciado
     def iniciar_trajeto_caminhao(self):
         self.administrador_enviar("iniciar trajeto/")
 

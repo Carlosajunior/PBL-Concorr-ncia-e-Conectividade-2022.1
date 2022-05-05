@@ -1,6 +1,5 @@
 import json
 import socket
-import threading
 from time import sleep
 
 class Caminhao:
@@ -86,6 +85,10 @@ class Caminhao:
             self.lista_lixeiras.insert(new_index,self.lista_lixeiras.pop(old_index))
             self.enviar_mensagem('posição da lixeira alterada com sucesso.')
 
+    #Acessa a lista das lixeiras que devem ser verificadas, verifica se a lixeira está com status "aberta" e se ela possui
+    #alguma carga de lixo, então envia uma requisição ao servidor solicitando que a lixeira em questão seja esvaziada, após 
+    #isso printa na tela a coordenda da lixeira esvaziada e aguarda 5 segundos para esvaziar a próxima. Ao terminar de percorrer
+    #a lista, a esvazia. No caso da lixeira estar sem lixo e/ou com status "fechada", simplesmente a ignora.
     def realizar_trajeto(self):
             for lixeira in self.lista_lixeiras:
                 print("Realizando o trajeto.")
