@@ -2,6 +2,7 @@ import json
 import socket
 import sys
 import threading
+from time import sleep
 
 class Lixeira:
 
@@ -34,8 +35,14 @@ class Lixeira:
             else:
                 break
         self.cadastrar_lixeira()
-        thread = threading.Thread(target= self.receber_mensagem)
-        thread.start()
+        # thread = threading.Thread(target= self.receber_mensagem)
+        # thread.start()
+        self.receber_mensagem()
+        print("thread iniciada")
+        self.receber_entrada_terminal()
+
+    #responsável por receber as entradas fornecidas pelo terminal e inserir lixo na lixeira manualmente
+    def receber_entrada_terminal(self):
         while True:
             opcao = input("Escolha uma das opções: \n 1-Inserir carga de lixo \n 2-Encerrar programa \n")
             if opcao == '2':
@@ -43,7 +50,7 @@ class Lixeira:
             elif opcao == '1':
                 lixo = input("Insira a quantidade de lixo a ser adicionado a lixeira: ")
                 self.inserir_lixo(float(lixo))
-        sys.exit("Encerrando o programa.")     
+        sys.exit("Encerrando o programa.")   
 
     #Faz a conexão da lixeira ao servidor usando o protocolo TCP/IP
     def lixeira_conectar(self,ip, porta):
@@ -65,6 +72,7 @@ class Lixeira:
 
     #Este método é responsável por receber as mensagens enviadas pelo servidor, e a partir de seu conteudo, executar algum dos métodos
     def receber_mensagem(self):
+        print("thread sendo executada")
         while True:
             print("Aguardando mensagem.")            
             #Recebe os dados enviados pelo cliente, até o limite do payload em bytes
@@ -102,6 +110,7 @@ class Lixeira:
                     else:
                         self.definir_carga(mensagem)
                         self.enviar_mensagem('lixo adicionado a lixeira com sucesso', self.cliente_socket)
+            sleep(5)
 
     #Este método é responsável por alterar a capacidade maxima da lixeira através de uma requisição do servidor
     def definir_capacidade(self, mensagem):
@@ -109,8 +118,10 @@ class Lixeira:
 
     #Este método insere mais lixo na lixeira através de dados inseridos pelo terminal
     def inserir_lixo(self, lixo):
-        if lixo + self.carga_lixeira <= self.carga_lixeira:
-            self.carga_lixeira = self.carga_lixeira() + lixo
+        print(lixo)
+        print(self.carga_lixeira)
+        if lixo + self.carga_lixeira <= self.capacidade_lixeira:
+            self.carga_lixeira = self.carga_lixeira + lixo
             print("Lixo adicionado com sucesso.")
         else:
             print("A carga de lixo ultrapassa a capacidade máxima da lixeira.")
