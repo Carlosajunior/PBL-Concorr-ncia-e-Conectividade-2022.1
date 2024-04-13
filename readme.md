@@ -1,3 +1,5 @@
-* Para rodar o projeto é necessário instalar o python na versão 3. 
-* Para executar cada arquivo é necessário abrir um terminal e navegar até a pasta onde o arquivo está localizado e executar o comando "python NomeDoArquivo.py"
-* O script multithreadServer.py é o primeiro que deve ser executado, onde as demais entidades irão se conectar via o ip da máquina em que ele está sendo executado e na porta 2004.
+## College project for Computers Network subject, using Python 3 to deploy TCP/IP protocols and thread management.
+
+## To run the project, it's necessary to install Python version 3.
+## To execute each file, you need to open a terminal and navigate to the folder where the file is located and run the command "python FileName.py".
+## The script multithreadServer.py is the first one that should be executed, where the other entities will connect via the IP of the machine on which it's being run and on port 2004.
